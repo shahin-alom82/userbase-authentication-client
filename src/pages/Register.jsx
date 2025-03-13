@@ -1,10 +1,11 @@
-import { Link } from 'react-router-dom';
-import { imageUpload } from '../utility';
+import { Link, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import React from 'react';
 import { AuthContext } from "../provider/AuthProvider";
+import axios from 'axios';
 
 const Register = () => {
+const navigate = useNavigate()
 
       const { user, updateUserProfile, createUser, loading } = useContext(AuthContext)
 
@@ -15,19 +16,16 @@ const Register = () => {
             const password = form.password.value;
             const email = form.email.value;
             const image = form.image.files[0]
+            const formData = new FormData();
+            formData.append("image", image);
             // console.log('name, password, email', name, password, email, image)
             try {
-                  const imageUrl = await imageUpload(image)
-                  
-                  const formInfo = {
-                        name,
-                        email,
-                        password,
-                        image: imageUrl
-                  }
-
+                  // const imageUrl = await imageUpload(image)
+                  const { data } = await axios.post(`https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API}`, formData);
+                  const imageUrl = data.data.display_url;
                   await createUser(email, password);
-                  updateUserProfile(name, image)
+                  updateUserProfile(name, imageUrl)
+                  navigate('/dashboard/alluser')
                   // console.log('image', formInfo)
             } catch (error) {
                   console.log(error)
@@ -39,7 +37,7 @@ const Register = () => {
             <div>
                   <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
                         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-                              <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                              <h2 className="mt-10 text-center text-4xl font-bold leading-9 tracking-tight text-gray-900">
                                     Register Now
                               </h2>
                         </div>
@@ -47,7 +45,7 @@ const Register = () => {
                         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                               <form onSubmit={handlaSubmit} className="space-y-6">
                                     <div>
-                                          <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                                          <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
                                                 Your Name
                                           </label>
                                           <div className="mt-2">

@@ -1,14 +1,35 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../provider/AuthProvider';
+import toast from 'react-hot-toast';
 
 const Login = () => {
-      const handlaSubmit = e => {
+
+      const { loginUser } = useContext(AuthContext)
+      const navigate = useNavigate()
+      const handlaSubmit = async e => {
             e.preventDefault()
             const form = e.target;
             const password = form.password.value;
             const email = form.email.value;
-            console.log('name, email', password, email)
+            console.log('password, email', password, email)
+
+            // const formInfo = {
+            //       password,
+            //       email
+            // }
+
+            try {
+                  await loginUser(email, password)
+                  toast.success('Login User')
+                  navigate('/dashboard/alluser')
+
+            } catch (error) {
+                  console.log('error', error)
+            }
       }
+
+
 
       return (
             <div >

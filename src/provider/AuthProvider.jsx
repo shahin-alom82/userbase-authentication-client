@@ -3,7 +3,7 @@ import React, { createContext, useEffect, useState } from 'react';
 import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut, updateProfile } from 'firebase/auth'
 
 import { app } from '../firebase/firebase.config'
-
+import axios from 'axios'
 export const AuthContext = createContext(null);
 
 const auth = getAuth(app);
@@ -16,7 +16,6 @@ const AuthProvider = ({ children }) => {
 
       const [user, setUser] = useState(null);
       const [loading, setLoading] = useState(true);
-
 
       const createUser = (email, password) => {
             setLoading(true);
@@ -46,12 +45,42 @@ const AuthProvider = ({ children }) => {
 
 
 
+      const saveUser = async (user) => {
+            const currentUser = {
+                  email: user?.email,
+                  role: 'admin',
+                  status: 'verify'
+            }
+            const { data } = await axios.put('http://localhost:5000/users', currentUser)
+            console.log('data', data)
+            return data;
+      }
+
+
+
+      const getToken = async (user) => {
+            const email = user?.email;
+            const { data } = await axios.post('http://localhost:5000/jwt', email)
+            if (data.token) {
+                  console.log('token', data?.token)
+                  localStorage.setItem('token', data?.token)
+            }
+
+      }
+
+
 
       useEffect(() => {
             const unsubscribe = onAuthStateChanged(auth, currentUser => {
                   if (currentUser) {
                         setUser(currentUser)
+                        saveUser(currentUser)
+                        getToken(currentUser)
                         console.log('currentUser', currentUser)
+                        setLoading(false)
+                        // token
+                  } else {
+                        localStorage.removeItem('token')
                         setLoading(false)
                   }
 
